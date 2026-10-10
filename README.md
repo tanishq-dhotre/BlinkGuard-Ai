@@ -4,6 +4,15 @@ A webcam-based drowsiness-detection prototype using OpenCV + MediaPipe Face Mesh
 It calculates the Eye Aspect Ratio (EAR) from eye landmarks and warns when the eyes
 appear closed for longer than a configurable duration.
 
+## Browser demo
+The browser version is available at:
+https://tanishq-dhotre.github.io/BlinkGuard-Ai/
+
+Open the page over HTTPS and select **Start camera**, then allow camera access.
+Face detection runs locally in the browser; video is not uploaded or recorded.
+The first start downloads the MediaPipe model from Google's public model hosting.
+The site is a demo and not a certified driver-safety system.
+
 ## Requirements
 - Windows 10/11 recommended
 - Python 3.11 (recommended for the pinned MediaPipe version)
