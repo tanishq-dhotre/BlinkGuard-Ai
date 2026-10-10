@@ -124,7 +124,7 @@
         </div>
         <div class="panel info">
           <p><strong>Privacy:</strong> Video is processed in your browser and is not uploaded or recorded.</p>
-          <p>For best results, use a well-lit room and face the camera. The alert threshold is 1.5 seconds.</p>
+          <p>For best results, use a well-lit room and face the camera. The alert threshold is 3 seconds.</p>
         </div>
       </aside>
     </section>
@@ -151,7 +151,7 @@
     const leftEye = [33, 160, 158, 133, 153, 144];
     const rightEye = [362, 385, 387, 263, 373, 380];
     const threshold = 0.21;
-    const closedSeconds = 1.5;
+    const closedSeconds = 3;
     let landmarker;
     let stream;
     let animationId;
@@ -173,11 +173,29 @@
     }
 
     function drawEye(points, indices) {
+      const toCanvas = index => ({
+        x: (1 - points[index].x) * canvas.width,
+        y: points[index].y * canvas.height
+      });
+      const first = toCanvas(indices[0]);
+      context.beginPath();
+      context.moveTo(first.x, first.y);
+      for (const index of indices.slice(1)) {
+        const point = toCanvas(index);
+        context.lineTo(point.x, point.y);
+      }
+      context.lineTo(first.x, first.y);
+      context.strokeStyle = "#ffe36e";
+      context.lineWidth = 2;
+      context.setLineDash([3, 4]);
+      context.stroke();
+      context.setLineDash([]);
+
       context.fillStyle = "#ffe36e";
       for (const index of indices) {
-        const point = points[index];
+        const point = toCanvas(index);
         context.beginPath();
-        context.arc(point.x * canvas.width, point.y * canvas.height, 3, 0, Math.PI * 2);
+        context.arc(point.x, point.y, 3, 0, Math.PI * 2);
         context.fill();
       }
     }
@@ -280,6 +298,12 @@
       startButton.disabled = true;
       errorBox.style.display = "none";
       setStatus("Loading face detection model");
+      if (!audioContext) audioContext = new AudioContext();
+      const audioReady = audioContext.state === "suspended" ? audioContext.resume() : Promise.resolve();
+      audioReady.catch(error => {
+        errorBox.textContent = `Sound is unavailable: ${error.message || error}. Visual alerts will still work.`;
+        errorBox.style.display = "block";
+      });
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
           throw new Error("Camera access requires HTTPS and a supported browser.");

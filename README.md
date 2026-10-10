@@ -10,6 +10,8 @@ https://tanishq-dhotre.github.io/BlinkGuard-Ai/
 
 Open the page over HTTPS and select **Start camera**, then allow camera access.
 Face detection runs locally in the browser; video is not uploaded or recorded.
+The browser demo sounds an alert after 3 seconds of continuous eye closure; the
+Python desktop app keeps its separate 1.5-second setting.
 The first start downloads the MediaPipe model from Google's public model hosting.
 The site is a demo and not a certified driver-safety system.
 
