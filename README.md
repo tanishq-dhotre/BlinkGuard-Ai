@@ -4,27 +4,18 @@ A webcam-based drowsiness-detection prototype using OpenCV + MediaPipe Face Mesh
 It calculates the Eye Aspect Ratio (EAR) from eye landmarks and warns when the eyes
 appear closed for longer than a configurable duration.
 
-## Live username/password app
+## Live Web App (Login & AI Drowsiness Detection)
 
-The public entry link redirects to the real sign-in page:
-https://tanishq-dhotre.github.io/BlinkGuard-Ai/
+Open the live web app:
+**https://tanishq-dhotre.github.io/BlinkGuard-Ai/**
 
-The Flask app that checks account credentials is hosted at:
-https://blinkguard-auth.onrender.com/
+### Default Sign-in Credentials:
+- **Username:** `admin`
+- **Password:** `admin123`
 
-Create your own account on first use, then use that username and password to sign
-in. There is no shared/default username or password.
+*(You can also use `driver` / `blinkguard123`, use the one-click **"Auto-fill & Enter"** button, or create a custom account under the **"Create account"** tab).*
 
-## Username/password web app
-
-The authenticated camera app runs as a Flask service on Render. GitHub Pages
-redirects to this service because static hosting cannot validate passwords.
-Allow camera access when prompted.
-
-The included free Render configuration stores account records in a local SQLite
-database on an ephemeral filesystem. Accounts may be lost when the service
-restarts or is redeployed. Configure persistent storage before relying on
-long-term accounts.
+All camera and face landmark processing runs 100% locally in your browser for privacy. Allow webcam permissions when prompted.
 
 ## Requirements
 - Windows 10/11 recommended

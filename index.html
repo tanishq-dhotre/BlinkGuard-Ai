@@ -3,37 +3,1380 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0;url=https://blinkguard-auth.onrender.com/login">
-  <title>BlinkGuard | Secure sign in</title>
-  <script>
-    window.location.replace("https://blinkguard-auth.onrender.com/login");
-  </script>
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="BlinkGuard is an AI-powered driver drowsiness detection system with secure user authentication and real-time webcam eye tracking.">
+  <title>BlinkGuard | AI Drowsiness Detection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      color-scheme: dark;
+      font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --bg: #0b1220;
+      --panel: #111c2e;
+      --panel-hover: #16243b;
+      --panel-subtle: #0d1625;
+      --line: #223249;
+      --line-active: #3b5379;
+      --text: #eef4ff;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.25);
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.25);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.3);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 15px;
+      line-height: 1.5;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background gradient glow */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(59, 130, 246, 0.12) 0%, rgba(11, 18, 32, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    button { font: inherit; border: none; cursor: pointer; transition: all 0.2s ease; }
+    input { font: inherit; }
+
+    /* =========================================================
+       AUTHENTICATION SECTION
+       ========================================================= */
+    #authContainer {
+      position: relative;
+      z-index: 1;
+      width: min(440px, calc(100% - 32px));
+      margin: 40px auto;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .auth-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
       display: grid;
       place-items: center;
-      background: #0b1220;
-      color: #edf3ff;
-      font: 16px system-ui, sans-serif;
+      font-size: 20px;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
+      border: 1px solid #60a5fa;
     }
-    main {
-      width: min(440px, calc(100% - 40px));
-      padding: 28px;
-      border: 1px solid #26344c;
-      border-radius: 16px;
-      background: #111c2e;
-      line-height: 1.6;
+
+    .brand-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #ffffff, #93c5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    a { color: #74a7ff; }
+
+    .auth-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 30px 28px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: var(--panel-subtle);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 22px;
+      gap: 4px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 9px;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .auth-tab.active {
+      background: #1e2d44;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .auth-heading {
+      margin-bottom: 6px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .auth-sub {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--panel-subtle);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+      background: #0f1a2b;
+    }
+
+    .toggle-pwd {
+      position: absolute;
+      right: 12px;
+      background: none;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      padding: 4px;
+      font-weight: 600;
+    }
+    .toggle-pwd:hover { color: #fff; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.98rem;
+      margin-top: 8px;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      transform: translateY(-1px);
+    }
+
+    /* Demo credentials hint box */
+    .demo-creds-box {
+      margin-top: 22px;
+      padding: 14px 16px;
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px dashed rgba(96, 165, 250, 0.35);
+      border-radius: 12px;
+      font-size: 0.85rem;
+    }
+
+    .demo-creds-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      color: #93c5fd;
+      font-weight: 700;
+    }
+
+    .creds-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 3px 0;
+      color: #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+    }
+
+    .btn-autofill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1e3a8a;
+      color: #bfdbfe;
+      border: 1px solid #3b82f6;
+      border-radius: 7px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-autofill:hover {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .auth-alert {
+      display: none;
+      padding: 11px 14px;
+      border-radius: 9px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+    .auth-alert.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+    .auth-alert.success {
+      display: block;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
+    /* =========================================================
+       MAIN APPLICATION SECTION
+       ========================================================= */
+    #appContainer {
+      position: relative;
+      z-index: 1;
+      width: min(1120px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 24px;
+    }
+
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      color: #cbd5e1;
+    }
+
+    .status-dot-mini {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green-glow);
+    }
+
+    .btn-signout {
+      background: #1f293d;
+      color: #cbd5e1;
+      border: 1px solid var(--line);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+    .btn-signout:hover {
+      background: #2d3b54;
+      color: #fff;
+      border-color: #475569;
+    }
+
+    .hero-intro {
+      margin-bottom: 22px;
+    }
+    .hero-intro h1 {
+      font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+    .hero-intro p {
+      color: var(--text-muted);
+      max-width: 680px;
+      font-size: 0.95rem;
+    }
+
+    /* Layout Grid */
+    .app-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(290px, 1fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .main-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Video Screen Viewport */
+    .video-viewport {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      min-height: 280px;
+      background: #060a12;
+      border-radius: 14px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      border: 1px solid #1a273b;
+    }
+
+    #videoElement, #canvasElement {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #videoElement { display: none; }
+    #canvasElement { display: none; }
+
+    .placeholder-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      color: var(--text-muted);
+      padding: 30px;
+      max-width: 380px;
+      gap: 12px;
+    }
+    .placeholder-icon {
+      font-size: 2.8rem;
+      opacity: 0.6;
+    }
+
+    /* Alert Banner overlay on camera */
+    .drowsy-banner {
+      display: none;
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      background: rgba(220, 38, 38, 0.92);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 800;
+      text-align: center;
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
+      border: 2px solid #fecaca;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.65);
+      animation: pulseAlert 0.8s infinite alternate;
+      z-index: 10;
+    }
+
+    @keyframes pulseAlert {
+      from { transform: scale(0.99); opacity: 0.95; }
+      to { transform: scale(1.01); opacity: 1; }
+    }
+
+    .camera-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .camera-status {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #64748b;
+      transition: all 0.3s;
+    }
+    .status-dot.active {
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+    .status-dot.warn {
+      background: var(--amber);
+      box-shadow: 0 0 12px var(--amber);
+    }
+    .status-dot.alert {
+      background: var(--red);
+      box-shadow: 0 0 14px var(--red);
+    }
+
+    .camera-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-action {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-action.primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-action.primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    .btn-action.secondary {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid var(--line);
+    }
+    .btn-action.secondary:hover:not(:disabled) {
+      background: #334155;
+      color: #fff;
+    }
+    .btn-action:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .camera-error {
+      display: none;
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      color: #fca5a5;
+      font-size: 0.85rem;
+    }
+
+    /* Sidebar cards */
+    .sidebar-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    .card-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .live-state-display {
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .live-state-display.state-safe { color: var(--green); }
+    .live-state-display.state-warn { color: var(--amber); }
+    .live-state-display.state-danger { color: var(--red); }
+
+    .state-hint {
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+      min-height: 40px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .metric-tile {
+      background: var(--panel-subtle);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .metric-title {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 4px;
+      color: #fff;
+    }
+
+    .test-audio-row {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .btn-test-sound {
+      background: #192538;
+      border: 1px solid var(--line);
+      color: #93c5fd;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .btn-test-sound:hover {
+      background: #223552;
+      color: #fff;
+    }
+
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .info-list strong { color: #e2e8f0; }
+
+    .notice-pill {
+      margin-top: 22px;
+      background: #171f11;
+      border: 1px solid #365314;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.83rem;
+      color: #d9f99d;
+      line-height: 1.5;
+    }
+    .notice-pill strong { color: #bef264; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 820px) {
+      .app-layout { grid-template-columns: 1fr; }
+      .app-header { flex-direction: column; align-items: flex-start; }
+      .user-badge { width: 100%; justify-content: space-between; }
+      .camera-bar { flex-direction: column; align-items: stretch; }
+      .camera-btns { width: 100%; }
+      .camera-btns .btn-action { flex: 1; justify-content: center; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>BlinkGuard sign in</h1>
-    <p>Taking you to the secure username and password sign-in page…</p>
-    <p><a href="https://blinkguard-auth.onrender.com/login">Continue to BlinkGuard sign in</a></p>
+
+  <!-- =========================================================
+       SECTION 1: USER AUTHENTICATION SCREEN
+       ========================================================= -->
+  <div id="authContainer">
+    <div class="auth-brand">
+      <div class="brand-icon">👁️</div>
+      <div class="brand-title">BlinkGuard AI</div>
+    </div>
+
+    <div class="auth-card">
+      <!-- Tabs for Sign In / Sign Up -->
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" id="tabSignIn" type="button" role="tab">Sign in</button>
+        <button class="auth-tab" id="tabSignUp" type="button" role="tab">Create account</button>
+      </div>
+
+      <!-- Feedback Alert -->
+      <div id="authAlert" class="auth-alert" role="alert"></div>
+
+      <!-- SIGN IN FORM -->
+      <form id="signInForm" autocomplete="on">
+        <h2 class="auth-heading">Sign in to BlinkGuard</h2>
+        <p class="auth-sub">Enter your credentials to access the drowsiness detection dashboard.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="loginUsername">Username</label>
+          <div class="input-wrapper">
+            <input class="form-input" id="loginUsername" name="username" type="text" placeholder="e.g. admin" autocomplete="username" required autofocus>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <div class="input-wrapper">
+            <input class="form-input" id="loginPassword" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+            <button class="toggle-pwd" id="toggleLoginPwd" type="button">Show</button>
+          </div>
+        </div>
+
+        <button class="btn-submit" type="submit" id="btnSubmitLogin">Sign in & Launch</button>
+      </form>
+
+      <!-- SIGN UP FORM (HIDDEN BY DEFAULT) -->
+      <form id="signUpForm" style="display:none;" autocomplete="on">
+        <h2 class="auth-heading">Create new account</h2>
+        <p class="auth-sub">Choose a username and password to create a personal account.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="regUsername">Username</label>
+          <div class="input-wrapper">
+            <input class="form-input" id="regUsername" name="username" type="text" placeholder="Choose a username" autocomplete="username" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regPassword">Password</label>
+          <div class="input-wrapper">
+            <input class="form-input" id="regPassword" name="password" type="password" placeholder="Minimum 4 characters" autocomplete="new-password" required>
+            <button class="toggle-pwd" id="toggleRegPwd" type="button">Show</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regConfirmPassword">Confirm Password</label>
+          <div class="input-wrapper">
+            <input class="form-input" id="regConfirmPassword" name="confirmPassword" type="password" placeholder="Confirm your password" autocomplete="new-password" required>
+          </div>
+        </div>
+
+        <button class="btn-submit" type="submit" id="btnSubmitRegister">Register & Sign In</button>
+      </form>
+
+      <!-- DEMO CREDENTIALS SHORTCUT BOX -->
+      <div class="demo-creds-box">
+        <div class="demo-creds-header">
+          <span>⚡ Default Credentials</span>
+          <button class="btn-autofill" id="btnQuickFill" type="button" title="Autofill and sign in with admin">
+            Auto-fill & Enter
+          </button>
+        </div>
+        <div class="creds-row">
+          <span>Username:</span>
+          <strong>admin</strong>
+        </div>
+        <div class="creds-row">
+          <span>Password:</span>
+          <strong>admin123</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       SECTION 2: DROWSINESS DETECTION APPLICATION
+       ========================================================= -->
+  <main id="appContainer" style="display:none;">
+    <!-- Top Header Navigation -->
+    <header class="app-header">
+      <div class="app-brand">
+        <div class="brand-icon">👁️</div>
+        <div>
+          <strong style="font-size:1.15rem; letter-spacing:-0.01em;">BlinkGuard</strong>
+          <span style="display:block; font-size:0.75rem; color:var(--text-muted);">AI Driver Attention Guard</span>
+        </div>
+      </div>
+
+      <div class="user-badge">
+        <div class="user-info">
+          <span class="status-dot-mini"></span>
+          <span>Logged in: <strong id="currentUsernameDisplay" style="color:#fff;">admin</strong></span>
+        </div>
+        <button class="btn-signout" id="btnSignOut" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <!-- App Intro -->
+    <section class="hero-intro">
+      <h1>Real-Time Drowsiness Detection</h1>
+      <p>BlinkGuard computes your Eye Aspect Ratio (EAR) locally via webcam using MediaPipe Face Mesh. If your eyes stay closed for more than 3 seconds, a safety alert siren triggers.</p>
+    </section>
+
+    <!-- Main Grid -->
+    <div class="app-layout">
+      <!-- Camera viewport panel -->
+      <div class="main-panel">
+        <div class="video-viewport">
+          <!-- Visual alert banner overlay -->
+          <div class="drowsy-banner" id="drowsyBanner">
+            ⚠️ DROWSINESS ALERT! OPEN YOUR EYES!
+          </div>
+
+          <!-- Video & Canvas -->
+          <video id="videoElement" autoplay playsinline muted></video>
+          <canvas id="canvasElement"></canvas>
+
+          <!-- Placeholder when camera is stopped -->
+          <div class="placeholder-view" id="placeholderView">
+            <span class="placeholder-icon">📷</span>
+            <strong>Webcam is turned off</strong>
+            <span style="font-size:0.85rem;">Click "Start Camera" below to grant browser webcam permission and begin AI eye monitoring.</span>
+          </div>
+        </div>
+
+        <!-- Camera toolbar -->
+        <div class="camera-bar">
+          <div class="camera-status">
+            <span class="status-dot" id="cameraStatusDot"></span>
+            <span id="cameraStatusText">Camera is idle</span>
+          </div>
+          <div class="camera-btns">
+            <button class="btn-action primary" id="btnStartCamera" type="button">
+              <span>▶</span> Start Camera
+            </button>
+            <button class="btn-action secondary" id="btnStopCamera" type="button" disabled>
+              <span>⏹</span> Stop
+            </button>
+          </div>
+        </div>
+
+        <div class="camera-error" id="cameraErrorBox"></div>
+      </div>
+
+      <!-- Real-time Metrics & Status Sidebar -->
+      <aside class="sidebar-panel">
+        <div class="card">
+          <div class="card-label">Current State</div>
+          <div class="live-state-display" id="liveStateDisplay">Waiting to start</div>
+          <p class="state-hint" id="stateHint">Press "Start Camera" to begin driver drowsiness analysis.</p>
+
+          <div class="metrics-grid">
+            <div class="metric-tile">
+              <div class="metric-title">Eye Aspect Ratio</div>
+              <div class="metric-val" id="earMetricDisplay">—</div>
+            </div>
+            <div class="metric-tile">
+              <div class="metric-title">Closed Time</div>
+              <div class="metric-val" id="closedDurationDisplay">0.0s</div>
+            </div>
+          </div>
+
+          <div class="test-audio-row">
+            <span style="font-size:0.8rem; color:var(--text-muted);">Alert Siren Test:</span>
+            <button class="btn-test-sound" id="btnTestAudio" type="button">🔊 Test Siren</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">System Specs & Privacy</div>
+          <div class="info-list">
+            <p><strong>100% Private:</strong> All facial tracking runs purely inside your browser using client-side WebAssembly. No video or frames ever leave your device.</p>
+            <p><strong>Threshold:</strong> EAR &lt; 0.21 triggers closed eye counting. Sustained closure &ge; 3.0s triggers high-priority audio-visual siren.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="notice-pill">
+      <strong>⚠️ Driver Safety Prototype:</strong> BlinkGuard is designed as an assistive safety demonstration. Do not use this as a replacement for adequate rest. Always pull over in a safe area if you feel fatigue.
+    </div>
   </main>
+
+  <!-- =========================================================
+       SECTION 3: AUTHENTICATION SCRIPT & ACCOUNT STORE
+       ========================================================= -->
+  <script>
+    (function initAuth() {
+      const STORAGE_USERS_KEY = "blinkguard_registered_users";
+      const STORAGE_SESSION_KEY = "blinkguard_active_session";
+
+      // Built-in accounts available by default
+      const DEFAULT_ACCOUNTS = {
+        "admin": "admin123",
+        "driver": "blinkguard123"
+      };
+
+      function getStoredUsers() {
+        try {
+          const raw = localStorage.getItem(STORAGE_USERS_KEY);
+          return raw ? JSON.parse(raw) : {};
+        } catch {
+          return {};
+        }
+      }
+
+      function saveStoredUsers(users) {
+        try {
+          localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+        } catch (e) {
+          console.error("Storage error:", e);
+        }
+      }
+
+      function getActiveSession() {
+        return sessionStorage.getItem(STORAGE_SESSION_KEY) || localStorage.getItem(STORAGE_SESSION_KEY);
+      }
+
+      function setActiveSession(username, remember = true) {
+        sessionStorage.setItem(STORAGE_SESSION_KEY, username);
+        if (remember) {
+          localStorage.setItem(STORAGE_SESSION_KEY, username);
+        }
+      }
+
+      function clearActiveSession() {
+        sessionStorage.removeItem(STORAGE_SESSION_KEY);
+        localStorage.removeItem(STORAGE_SESSION_KEY);
+      }
+
+      // UI Elements
+      const authContainer = document.getElementById("authContainer");
+      const appContainer = document.getElementById("appContainer");
+      const tabSignIn = document.getElementById("tabSignIn");
+      const tabSignUp = document.getElementById("tabSignUp");
+      const signInForm = document.getElementById("signInForm");
+      const signUpForm = document.getElementById("signUpForm");
+      const authAlert = document.getElementById("authAlert");
+      const loginUsernameInput = document.getElementById("loginUsername");
+      const loginPasswordInput = document.getElementById("loginPassword");
+      const toggleLoginPwd = document.getElementById("toggleLoginPwd");
+      const regUsernameInput = document.getElementById("regUsername");
+      const regPasswordInput = document.getElementById("regPassword");
+      const regConfirmPasswordInput = document.getElementById("regConfirmPassword");
+      const toggleRegPwd = document.getElementById("toggleRegPwd");
+      const btnQuickFill = document.getElementById("btnQuickFill");
+      const currentUsernameDisplay = document.getElementById("currentUsernameDisplay");
+      const btnSignOut = document.getElementById("btnSignOut");
+
+      function showAlert(message, type = "error") {
+        authAlert.textContent = message;
+        authAlert.className = `auth-alert ${type}`;
+      }
+
+      function clearAlert() {
+        authAlert.textContent = "";
+        authAlert.className = "auth-alert";
+      }
+
+      function switchTab(target) {
+        clearAlert();
+        if (target === "signin") {
+          tabSignIn.classList.add("active");
+          tabSignUp.classList.remove("active");
+          signInForm.style.display = "block";
+          signUpForm.style.display = "none";
+          loginUsernameInput.focus();
+        } else {
+          tabSignUp.classList.add("active");
+          tabSignIn.classList.remove("active");
+          signInForm.style.display = "none";
+          signUpForm.style.display = "block";
+          regUsernameInput.focus();
+        }
+      }
+
+      tabSignIn.addEventListener("click", () => switchTab("signin"));
+      tabSignUp.addEventListener("click", () => switchTab("signup"));
+
+      // Password toggle
+      toggleLoginPwd.addEventListener("click", () => {
+        const isPwd = loginPasswordInput.type === "password";
+        loginPasswordInput.type = isPwd ? "text" : "password";
+        toggleLoginPwd.textContent = isPwd ? "Hide" : "Show";
+      });
+
+      toggleRegPwd.addEventListener("click", () => {
+        const isPwd = regPasswordInput.type === "password";
+        regPasswordInput.type = isPwd ? "text" : "password";
+        toggleRegPwd.textContent = isPwd ? "Hide" : "Show";
+      });
+
+      // Quick Autofill & Login
+      btnQuickFill.addEventListener("click", () => {
+        switchTab("signin");
+        loginUsernameInput.value = "admin";
+        loginPasswordInput.value = "admin123";
+        performLogin("admin", "admin123");
+      });
+
+      function performLogin(username, password) {
+        clearAlert();
+        const trimmedUser = username.trim().toLowerCase();
+        const storedUsers = getStoredUsers();
+
+        const isValidDefault = DEFAULT_ACCOUNTS[trimmedUser] && DEFAULT_ACCOUNTS[trimmedUser] === password;
+        const isValidStored = storedUsers[trimmedUser] && storedUsers[trimmedUser] === password;
+
+        if (isValidDefault || isValidStored) {
+          setActiveSession(username.trim());
+          showApp(username.trim());
+        } else {
+          showAlert("Invalid username or password. You can use 'admin' / 'admin123' or create an account.");
+        }
+      }
+
+      signInForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        performLogin(loginUsernameInput.value, loginPasswordInput.value);
+      });
+
+      signUpForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        clearAlert();
+
+        const user = regUsernameInput.value.trim();
+        const pwd = regPasswordInput.value;
+        const confirm = regConfirmPasswordInput.value;
+
+        if (user.length < 3) {
+          showAlert("Username must be at least 3 characters.");
+          return;
+        }
+        if (pwd.length < 4) {
+          showAlert("Password must be at least 4 characters.");
+          return;
+        }
+        if (pwd !== confirm) {
+          showAlert("Passwords do not match.");
+          return;
+        }
+
+        const lowerUser = user.toLowerCase();
+        const storedUsers = getStoredUsers();
+
+        if (DEFAULT_ACCOUNTS[lowerUser] || storedUsers[lowerUser]) {
+          showAlert("That username already exists. Please pick another.");
+          return;
+        }
+
+        storedUsers[lowerUser] = pwd;
+        saveStoredUsers(storedUsers);
+
+        setActiveSession(user);
+        showAlert(`Account created for ${user}! Welcome to BlinkGuard.`, "success");
+        setTimeout(() => {
+          showApp(user);
+        }, 600);
+      });
+
+      function showApp(username) {
+        authContainer.style.display = "none";
+        appContainer.style.display = "block";
+        currentUsernameDisplay.textContent = username;
+      }
+
+      function showLogin() {
+        if (window.blinkGuardStopCamera) {
+          window.blinkGuardStopCamera();
+        }
+        clearActiveSession();
+        appContainer.style.display = "none";
+        authContainer.style.display = "block";
+        switchTab("signin");
+        loginPasswordInput.value = "";
+      }
+
+      btnSignOut.addEventListener("click", showLogin);
+
+      // Check existing session
+      const existingUser = getActiveSession();
+      if (existingUser) {
+        showApp(existingUser);
+      }
+    })();
+  </script>
+
+  <!-- =========================================================
+       SECTION 4: MEDIAPIPE FACE TRACKING & DROWSINESS ENGINE
+       ========================================================= -->
+  <script type="module">
+    import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
+
+    const video = document.getElementById("videoElement");
+    const canvas = document.getElementById("canvasElement");
+    const context = canvas.getContext("2d");
+    const placeholder = document.getElementById("placeholderView");
+    const btnStart = document.getElementById("btnStartCamera");
+    const btnStop = document.getElementById("btnStopCamera");
+    const statusText = document.getElementById("cameraStatusText");
+    const statusDot = document.getElementById("cameraStatusDot");
+    const liveState = document.getElementById("liveStateDisplay");
+    const stateHint = document.getElementById("stateHint");
+    const earDisplay = document.getElementById("earMetricDisplay");
+    const closedDisplay = document.getElementById("closedDurationDisplay");
+    const drowsyBanner = document.getElementById("drowsyBanner");
+    const cameraErrorBox = document.getElementById("cameraErrorBox");
+    const btnTestAudio = document.getElementById("btnTestAudio");
+
+    // Face mesh eye landmark indices (MediaPipe 468 landmark topology)
+    const LEFT_EYE = [33, 160, 158, 133, 153, 144];
+    const RIGHT_EYE = [362, 385, 387, 263, 373, 380];
+    const EAR_THRESHOLD = 0.21;
+    const ALERT_SECONDS = 3.0;
+
+    let landmarker = null;
+    let stream = null;
+    let animId = null;
+    let closedStartTime = null;
+    let isAlerting = false;
+    let audioCtx = null;
+    let lastAlarmTime = 0;
+
+    function setStatus(text, kind = "") {
+      statusText.textContent = text;
+      statusDot.className = `status-dot ${kind}`;
+    }
+
+    // Audio synthesizer alarm using Web Audio API
+    function playAlarmSiren() {
+      const now = performance.now();
+      if (now - lastAlarmTime < 1800) return;
+      lastAlarmTime = now;
+
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+
+        const pitches = [[1600, 0], [1100, 0.25], [1600, 0.5], [1100, 0.75]];
+        pitches.forEach(([freq, offset]) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + offset);
+          gain.gain.setValueAtTime(0.18, audioCtx.currentTime + offset);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + offset + 0.22);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + offset);
+          osc.stop(audioCtx.currentTime + offset + 0.24);
+        });
+      } catch (err) {
+        console.warn("Audio alarm playback error:", err);
+      }
+    }
+
+    btnTestAudio.addEventListener("click", () => {
+      playAlarmSiren();
+    });
+
+    // Eye Aspect Ratio calculation
+    function computeEAR(points, indices) {
+      const dist = (i1, i2) => Math.hypot(points[i1].x - points[i2].x, points[i1].y - points[i2].y);
+      const horizontal = dist(indices[0], indices[3]);
+      if (horizontal <= 0) return 0;
+      const vertical1 = dist(indices[1], indices[5]);
+      const vertical2 = dist(indices[2], indices[4]);
+      return (vertical1 + vertical2) / (2.0 * horizontal);
+    }
+
+    // Draw eye contour outlines on the canvas
+    function drawEyeContour(points, indices) {
+      const toCanvas = (idx) => ({
+        x: (1 - points[idx].x) * canvas.width,
+        y: points[idx].y * canvas.height
+      });
+
+      const first = toCanvas(indices[0]);
+      context.beginPath();
+      context.moveTo(first.x, first.y);
+      for (let i = 1; i < indices.length; i++) {
+        const pt = toCanvas(indices[i]);
+        context.lineTo(pt.x, pt.y);
+      }
+      context.closePath();
+      context.strokeStyle = isAlerting ? "#ff4444" : "#facc15";
+      context.lineWidth = 2.5;
+      context.stroke();
+
+      // Landmarks dots
+      context.fillStyle = isAlerting ? "#ef4444" : "#67e8f9";
+      for (const idx of indices) {
+        const pt = toCanvas(idx);
+        context.beginPath();
+        context.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+        context.fill();
+      }
+    }
+
+    // Video animation loop
+    function renderFrame(timestamp) {
+      if (!stream || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        animId = requestAnimationFrame(renderFrame);
+        return;
+      }
+
+      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
+
+      // Mirror video feed on canvas
+      context.save();
+      context.translate(canvas.width, 0);
+      context.scale(-1, 1);
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      context.restore();
+
+      const results = landmarker.detectForVideo(video, timestamp);
+      const faceLandmarks = results.faceLandmarks;
+
+      if (!faceLandmarks || faceLandmarks.length === 0) {
+        closedStartTime = null;
+        isAlerting = false;
+        drowsyBanner.style.display = "none";
+        earDisplay.textContent = "—";
+        closedDisplay.textContent = "0.0s";
+        liveState.textContent = "Searching for face...";
+        liveState.className = "live-state-display";
+        stateHint.textContent = "Make sure your face is well lit and directly facing the webcam.";
+        setStatus("No face detected", "");
+      } else {
+        const landmarks = faceLandmarks[0];
+        drawEyeContour(landmarks, LEFT_EYE);
+        drawEyeContour(landmarks, RIGHT_EYE);
+
+        const leftEAR = computeEAR(landmarks, LEFT_EYE);
+        const rightEAR = computeEAR(landmarks, RIGHT_EYE);
+        const avgEAR = (leftEAR + rightEAR) / 2.0;
+        earDisplay.textContent = avgEAR.toFixed(3);
+
+        if (avgEAR < EAR_THRESHOLD) {
+          if (!closedStartTime) closedStartTime = timestamp;
+          const duration = (timestamp - closedStartTime) / 1000.0;
+          closedDisplay.textContent = `${duration.toFixed(1)}s`;
+
+          if (duration >= ALERT_SECONDS) {
+            isAlerting = true;
+            drowsyBanner.style.display = "block";
+            liveState.textContent = "DROWSINESS ALERT!";
+            liveState.className = "live-state-display state-danger";
+            stateHint.textContent = "Eyes closed for more than 3 seconds! Take a break immediately.";
+            setStatus("Critical: Driver Drowsy", "alert");
+            playAlarmSiren();
+
+            // Flash red border on canvas
+            context.strokeStyle = "rgba(239, 68, 68, 0.85)";
+            context.lineWidth = 10;
+            context.strokeRect(0, 0, canvas.width, canvas.height);
+          } else {
+            isAlerting = false;
+            drowsyBanner.style.display = "none";
+            liveState.textContent = "Eyes Closing...";
+            liveState.className = "live-state-display state-warn";
+            stateHint.textContent = `Warning: eyes detected closed for ${duration.toFixed(1)}s (alert at 3.0s).`;
+            setStatus("Eyes closing", "warn");
+          }
+        } else {
+          closedStartTime = null;
+          isAlerting = false;
+          drowsyBanner.style.display = "none";
+          closedDisplay.textContent = "0.0s";
+          liveState.textContent = "Driver Attentive";
+          liveState.className = "live-state-display state-safe";
+          stateHint.textContent = "Eyes are open and active. Real-time monitoring active.";
+          setStatus("Monitoring: Active", "active");
+        }
+      }
+
+      animId = requestAnimationFrame(renderFrame);
+    }
+
+    async function startCamera() {
+      if (stream) return;
+      btnStart.disabled = true;
+      cameraErrorBox.style.display = "none";
+      setStatus("Loading FaceMesh model...", "warn");
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("Webcam access requires HTTPS and a supported modern browser.");
+        }
+
+        // Initialize MediaPipe vision bundle if not loaded
+        if (!landmarker) {
+          const vision = await FilesetResolver.forVisionTasks(
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
+          );
+
+          // Attempt loading local task or fallback to CDN model
+          let modelAssetPath = "./face_landmarker.task";
+          try {
+            landmarker = await FaceLandmarker.createFromOptions(vision, {
+              baseOptions: {
+                modelAssetPath: modelAssetPath,
+                delegate: "GPU"
+              },
+              runningMode: "VIDEO",
+              numFaces: 1
+            });
+          } catch (gpuError) {
+            console.warn("GPU delegate failed, attempting CPU / remote model fallback:", gpuError);
+            landmarker = await FaceLandmarker.createFromOptions(vision, {
+              baseOptions: {
+                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                delegate: "CPU"
+              },
+              runningMode: "VIDEO",
+              numFaces: 1
+            });
+          }
+        }
+
+        setStatus("Requesting camera access...", "warn");
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false
+        });
+
+        video.srcObject = stream;
+        await video.play();
+
+        placeholder.style.display = "none";
+        video.style.display = "block";
+        canvas.style.display = "block";
+        btnStop.disabled = false;
+        btnStart.textContent = "Camera Running";
+        setStatus("Monitoring: Active", "active");
+
+        animId = requestAnimationFrame(renderFrame);
+      } catch (err) {
+        stopCamera();
+        const msg = err.name === "NotAllowedError"
+          ? "Camera permission was denied. Please allow camera permissions in your browser URL bar."
+          : `Failed to initialize camera: ${err.message || err}`;
+        cameraErrorBox.textContent = msg;
+        cameraErrorBox.style.display = "block";
+        setStatus("Failed to start", "alert");
+      } finally {
+        btnStart.disabled = Boolean(stream);
+      }
+    }
+
+    function stopCamera() {
+      if (animId) cancelAnimationFrame(animId);
+      animId = null;
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+
+      video.srcObject = null;
+      video.style.display = "none";
+      canvas.style.display = "none";
+      placeholder.style.display = "flex";
+      drowsyBanner.style.display = "none";
+
+      btnStop.disabled = true;
+      btnStart.disabled = false;
+      btnStart.innerHTML = "<span>▶</span> Start Camera";
+
+      closedStartTime = null;
+      isAlerting = false;
+      earDisplay.textContent = "—";
+      closedDisplay.textContent = "0.0s";
+      liveState.textContent = "Camera is off";
+      liveState.className = "live-state-display";
+      stateHint.textContent = "Click Start Camera to begin drowsiness analysis.";
+      setStatus("Camera is idle", "");
+    }
+
+    btnStart.addEventListener("click", startCamera);
+    btnStop.addEventListener("click", stopCamera);
+
+    window.blinkGuardStopCamera = stopCamera;
+    window.addEventListener("pagehide", stopCamera);
+  </script>
 </body>
 </html>
