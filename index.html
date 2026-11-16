@@ -71,10 +71,20 @@
     .notice { margin-top: 19px; padding: 14px 16px; border: 1px solid #574a2d; border-radius: 12px; background: #241e13; color: #e6d5aa; font-size: .83rem; line-height: 1.55; }
     .notice strong { color: #fff0c6; }
     .error { display: none; margin-top: 12px; color: #ff9aa6; font-size: .86rem; line-height: 1.5; }
+    .login-shell { width: min(420px, calc(100% - 32px)); margin: 10vh auto; }
+    .login-card { padding: 26px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
+    .login-card h1 { margin-bottom: 8px; font-size: 1.8rem; }
+    .login-card p { color: var(--muted); line-height: 1.55; }
+    .login-form { display: grid; gap: 14px; margin-top: 22px; }
+    .login-form label { display: grid; gap: 7px; color: #dfe9fa; font-size: .9rem; }
+    .login-form input { width: 100%; padding: 11px 12px; border: 1px solid #344866; border-radius: 9px; background: #0d1727; color: #edf3ff; font: inherit; }
+    .login-form input:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+    .demo-note { margin-top: 18px; padding: 12px; border: 1px solid #574a2d; border-radius: 10px; background: #241e13; color: #e6d5aa; font-size: .82rem; line-height: 1.5; }
+    .logout-button { border: 0; background: transparent; color: var(--blue); cursor: pointer; font: inherit; }
     @media (max-width: 760px) {
       .shell { width: min(100% - 24px, 560px); padding-top: 22px; }
       header { margin-bottom: 24px; }
-      .tag { display: none; }
+      .tag { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: .75rem; }
       .layout { grid-template-columns: 1fr; }
       .screen { min-height: 220px; }
       .camera-footer { align-items: flex-start; flex-direction: column; }
@@ -84,10 +94,28 @@
   </style>
 </head>
 <body>
-  <main class="shell">
+  <section class="login-shell" id="loginScreen" aria-labelledby="loginTitle">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">◉</span> BlinkGuard</div>
+    <div class="login-card">
+      <h1 id="loginTitle">Sign in</h1>
+      <p>Enter a username and password to continue to the demo.</p>
+      <form class="login-form" id="demoLoginForm">
+        <label for="demoUsername">Username
+          <input id="demoUsername" name="username" autocomplete="username" required>
+        </label>
+        <label for="demoPassword">Password
+          <input id="demoPassword" name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="button primary" type="submit">Sign in</button>
+      </form>
+      <div class="demo-note"><strong>Demo only:</strong> This sign-in screen is visual. It does not verify or save credentials and does not protect the public demo.</div>
+    </div>
+  </section>
+
+  <main class="shell" id="appShell" hidden>
     <header>
       <div class="brand"><span class="brand-mark" aria-hidden="true">◉</span> BlinkGuard</div>
-      <div class="tag">Browser-based drowsiness detection prototype</div>
+      <div class="tag"><span id="welcomeText">Browser-based drowsiness detection prototype</span> · <button class="logout-button" id="demoLogout" type="button">Sign out</button></div>
     </header>
 
     <section class="intro">
@@ -131,6 +159,31 @@
 
     <div class="notice"><strong>Prototype only:</strong> This demo is not a certified driver-safety system. Never use it as a substitute for rest or as the sole safety measure while driving. Test it while safely seated.</div>
   </main>
+
+  <script>
+    const loginScreen = document.querySelector("#loginScreen");
+    const appShell = document.querySelector("#appShell");
+    const loginForm = document.querySelector("#demoLoginForm");
+    const usernameInput = document.querySelector("#demoUsername");
+    const welcomeText = document.querySelector("#welcomeText");
+    const logoutButton = document.querySelector("#demoLogout");
+
+    loginForm.addEventListener("submit", event => {
+      event.preventDefault();
+      welcomeText.textContent = `Signed in as ${usernameInput.value.trim()}`;
+      loginScreen.hidden = true;
+      appShell.hidden = false;
+    });
+
+    logoutButton.addEventListener("click", () => {
+      window.blinkGuardStop?.();
+      loginForm.reset();
+      welcomeText.textContent = "Browser-based drowsiness detection prototype";
+      appShell.hidden = true;
+      loginScreen.hidden = false;
+      usernameInput.focus();
+    });
+  </script>
 
   <script type="module">
     import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
@@ -371,6 +424,7 @@
 
     startButton.addEventListener("click", start);
     stopButton.addEventListener("click", stop);
+    window.blinkGuardStop = stop;
     window.addEventListener("pagehide", stop);
   </script>
 </body>

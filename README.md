@@ -14,6 +14,8 @@ The browser demo sounds an alert after 3 seconds of continuous eye closure; the
 Python desktop app keeps its separate 1.5-second setting.
 The first start downloads the MediaPipe model from Google's public model hosting.
 The site is a demo and not a certified driver-safety system.
+The page also shows a visual-only username/password form. Any non-empty values
+continue to the demo; credentials are not checked, saved, or used to protect it.
 
 ## Username/password web app
 
