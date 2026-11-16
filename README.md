@@ -15,6 +15,19 @@ Python desktop app keeps its separate 1.5-second setting.
 The first start downloads the MediaPipe model from Google's public model hosting.
 The site is a demo and not a certified driver-safety system.
 
+## Username/password web app
+
+The secure account-based version runs as a separate Flask web service; GitHub
+Pages cannot validate passwords on its own. Deploy the repository's
+`render.yaml` as a Render Blueprint to create the service. It serves the
+authenticated camera app over HTTPS and users can create accounts on first use.
+Allow camera access when prompted.
+
+The included free Render configuration stores account records in a local SQLite
+database on an ephemeral filesystem. Accounts may be lost when the service
+restarts or is redeployed. Configure persistent storage before relying on
+long-term accounts.
+
 ## Requirements
 - Windows 10/11 recommended
 - Python 3.11 (recommended for the pinned MediaPipe version)

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: blinkguard-auth
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-web.txt
+    startCommand: gunicorn --workers 1 --timeout 120 app:app
+    envVars:
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "1"
