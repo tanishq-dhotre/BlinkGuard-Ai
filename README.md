@@ -4,25 +4,21 @@ A webcam-based drowsiness-detection prototype using OpenCV + MediaPipe Face Mesh
 It calculates the Eye Aspect Ratio (EAR) from eye landmarks and warns when the eyes
 appear closed for longer than a configurable duration.
 
-## Browser demo
-The browser version is available at:
+## Live username/password app
+
+The public entry link redirects to the real sign-in page:
 https://tanishq-dhotre.github.io/BlinkGuard-Ai/
 
-Open the page over HTTPS and select **Start camera**, then allow camera access.
-Face detection runs locally in the browser; video is not uploaded or recorded.
-The browser demo sounds an alert after 3 seconds of continuous eye closure; the
-Python desktop app keeps its separate 1.5-second setting.
-The first start downloads the MediaPipe model from Google's public model hosting.
-The site is a demo and not a certified driver-safety system.
-The page also shows a visual-only username/password form. Any non-empty values
-continue to the demo; credentials are not checked, saved, or used to protect it.
+The Flask app that checks account credentials is hosted at:
+https://blinkguard-auth.onrender.com/
+
+Create your own account on first use, then use that username and password to sign
+in. There is no shared/default username or password.
 
 ## Username/password web app
 
-The secure account-based version runs as a separate Flask web service; GitHub
-Pages cannot validate passwords on its own. Deploy the repository's
-`render.yaml` as a Render Blueprint to create the service. It serves the
-authenticated camera app over HTTPS and users can create accounts on first use.
+The authenticated camera app runs as a Flask service on Render. GitHub Pages
+redirects to this service because static hosting cannot validate passwords.
 Allow camera access when prompted.
 
 The included free Render configuration stores account records in a local SQLite
