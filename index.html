@@ -607,27 +607,77 @@
       color: #fff;
     }
 
-    .test-audio-row {
+    .audio-control-box {
       margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .audio-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding-top: 12px;
-      border-top: 1px solid var(--line);
+    }
+    .audio-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #93c5fd;
+    }
+    .audio-badge {
+      font-size: 0.72rem;
+      font-weight: 750;
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      padding: 2px 7px;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      transition: all 0.2s;
+    }
+    .audio-badge.pulsing {
+      background: rgba(239, 68, 68, 0.45);
+      animation: pulseAlert 0.4s infinite alternate;
+    }
+    .audio-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .audio-slider-row input[type="range"] {
+      flex: 1;
+      accent-color: #3b82f6;
+      cursor: pointer;
+    }
+    .audio-slider-row span {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: #fff;
+      min-width: 38px;
+      text-align: right;
     }
     .btn-test-sound {
-      background: #192538;
-      border: 1px solid var(--line);
-      color: #93c5fd;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
+      width: 100%;
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      border: 1px solid #3b82f6;
+      color: #fff;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
     .btn-test-sound:hover {
-      background: #223552;
-      color: #fff;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      box-shadow: 0 0 14px var(--primary-glow);
     }
 
     .info-list {
@@ -848,9 +898,17 @@
             </div>
           </div>
 
-          <div class="test-audio-row">
-            <span style="font-size:0.8rem; color:var(--text-muted);">Alert Siren Test:</span>
-            <button class="btn-test-sound" id="btnTestAudio" type="button">🔊 Test Siren</button>
+          <div class="audio-control-box">
+            <div class="audio-header">
+              <span class="audio-title">🔊 Emergency Siren Control</span>
+              <span class="audio-badge" id="audioBadge">MAX LOUD</span>
+            </div>
+            <div class="audio-slider-row">
+              <label for="volumeSlider">Volume:</label>
+              <input type="range" id="volumeSlider" min="10" max="100" value="100" step="5">
+              <span id="volumeValueDisplay">100%</span>
+            </div>
+            <button class="btn-test-sound" id="btnTestAudio" type="button">🔊 Test Loud Siren (Max)</button>
           </div>
         </div>
 
@@ -1094,6 +1152,9 @@
     const drowsyBanner = document.getElementById("drowsyBanner");
     const cameraErrorBox = document.getElementById("cameraErrorBox");
     const btnTestAudio = document.getElementById("btnTestAudio");
+    const volumeSlider = document.getElementById("volumeSlider");
+    const volumeValueDisplay = document.getElementById("volumeValueDisplay");
+    const audioBadge = document.getElementById("audioBadge");
 
     // Face mesh eye landmark indices (MediaPipe 468 landmark topology)
     const LEFT_EYE = [33, 160, 158, 133, 153, 144];
@@ -1107,47 +1168,150 @@
     let closedStartTime = null;
     let isAlerting = false;
     let audioCtx = null;
-    let lastAlarmTime = 0;
+    let masterGain = null;
+    let compressor = null;
+    let alarmActive = false;
+    let alarmInterval = null;
+    let testAlarmTimer = null;
+    let userVolume = 1.0; // 100% full volume
 
     function setStatus(text, kind = "") {
       statusText.textContent = text;
       statusDot.className = `status-dot ${kind}`;
     }
 
-    // Audio synthesizer alarm using Web Audio API
-    function playAlarmSiren() {
-      const now = performance.now();
-      if (now - lastAlarmTime < 1800) return;
-      lastAlarmTime = now;
-
+    function initAudio() {
       try {
         if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContextClass();
+
+          // DynamicsCompressor maximizes perceived loudness and prevents digital clipping
+          compressor = audioCtx.createDynamicsCompressor();
+          compressor.threshold.setValueAtTime(-10, audioCtx.currentTime);
+          compressor.knee.setValueAtTime(30, audioCtx.currentTime);
+          compressor.ratio.setValueAtTime(14, audioCtx.currentTime);
+          compressor.attack.setValueAtTime(0.002, audioCtx.currentTime);
+          compressor.release.setValueAtTime(0.08, audioCtx.currentTime);
+
+          masterGain = audioCtx.createGain();
+          masterGain.gain.setValueAtTime(userVolume, audioCtx.currentTime);
+
+          compressor.connect(masterGain);
+          masterGain.connect(audioCtx.destination);
         }
         if (audioCtx.state === "suspended") {
           audioCtx.resume();
         }
-
-        const pitches = [[1600, 0], [1100, 0.25], [1600, 0.5], [1100, 0.75]];
-        pitches.forEach(([freq, offset]) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = "sawtooth";
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + offset);
-          gain.gain.setValueAtTime(0.18, audioCtx.currentTime + offset);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + offset + 0.22);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(audioCtx.currentTime + offset);
-          osc.stop(audioCtx.currentTime + offset + 0.24);
-        });
-      } catch (err) {
-        console.warn("Audio alarm playback error:", err);
+      } catch (e) {
+        console.warn("Audio initialization issue:", e);
       }
     }
 
+    if (volumeSlider) {
+      volumeSlider.addEventListener("input", (e) => {
+        const val = parseInt(e.target.value, 10);
+        userVolume = val / 100.0;
+        volumeValueDisplay.textContent = `${val}%`;
+        if (masterGain && audioCtx) {
+          masterGain.gain.setValueAtTime(userVolume, audioCtx.currentTime);
+        }
+        if (val === 100) {
+          audioBadge.textContent = "MAX LOUD";
+          audioBadge.style.color = "#f87171";
+        } else {
+          audioBadge.textContent = `${val}% VOL`;
+          audioBadge.style.color = "#93c5fd";
+        }
+      });
+    }
+
+    // High-decibel piercing emergency siren pulse
+    function triggerLoudPulse(highFreq, lowFreq, pulseDuration = 0.17) {
+      initAudio();
+      if (!audioCtx || !compressor) return;
+
+      const now = audioCtx.currentTime;
+
+      // Piercing square wave oscillator (peak ear sensitivity)
+      const oscHigh = audioCtx.createOscillator();
+      const gainHigh = audioCtx.createGain();
+      oscHigh.type = "square";
+      oscHigh.frequency.setValueAtTime(highFreq, now);
+
+      gainHigh.gain.setValueAtTime(0.9, now);
+      gainHigh.gain.setValueAtTime(0.9, now + pulseDuration * 0.85);
+      gainHigh.gain.linearRampToValueAtTime(0.001, now + pulseDuration);
+
+      oscHigh.connect(gainHigh);
+      gainHigh.connect(compressor);
+
+      // Horn sawtooth wave oscillator (harsh warning harmonics)
+      const oscLow = audioCtx.createOscillator();
+      const gainLow = audioCtx.createGain();
+      oscLow.type = "sawtooth";
+      oscLow.frequency.setValueAtTime(lowFreq, now);
+
+      gainLow.gain.setValueAtTime(0.8, now);
+      gainLow.gain.setValueAtTime(0.8, now + pulseDuration * 0.85);
+      gainLow.gain.linearRampToValueAtTime(0.001, now + pulseDuration);
+
+      oscLow.connect(gainLow);
+      gainLow.connect(compressor);
+
+      oscHigh.start(now);
+      oscLow.start(now);
+      oscHigh.stop(now + pulseDuration);
+      oscLow.stop(now + pulseDuration);
+    }
+
+    // Continuous loud alarm siren loop
+    function startLoudAlarm() {
+      if (alarmActive) return;
+      alarmActive = true;
+      initAudio();
+
+      if (audioBadge) audioBadge.classList.add("pulsing");
+
+      let toggle = false;
+      // Immediate pulse
+      triggerLoudPulse(2500, 1000, 0.17);
+
+      // Rapid repeating alternating blasts every 200ms
+      alarmInterval = setInterval(() => {
+        if (!alarmActive) return;
+        toggle = !toggle;
+        const fHigh = toggle ? 2500 : 1900;
+        const fLow = toggle ? 1000 : 800;
+        triggerLoudPulse(fHigh, fLow, 0.17);
+      }, 200);
+    }
+
+    // Stop alarm immediately
+    function stopLoudAlarm() {
+      if (!alarmActive) return;
+      alarmActive = false;
+      if (alarmInterval) {
+        clearInterval(alarmInterval);
+        alarmInterval = null;
+      }
+      if (audioBadge) audioBadge.classList.remove("pulsing");
+    }
+
     btnTestAudio.addEventListener("click", () => {
-      playAlarmSiren();
+      initAudio();
+      if (testAlarmTimer) {
+        clearTimeout(testAlarmTimer);
+      }
+      startLoudAlarm();
+      btnTestAudio.textContent = "🔊 Siren Ringing (Max Loud)...";
+
+      testAlarmTimer = setTimeout(() => {
+        if (!isAlerting) {
+          stopLoudAlarm();
+        }
+        btnTestAudio.textContent = "🔊 Test Loud Siren (Max)";
+      }, 2500);
     });
 
     // Eye Aspect Ratio calculation
@@ -1214,6 +1378,7 @@
       if (!faceLandmarks || faceLandmarks.length === 0) {
         closedStartTime = null;
         isAlerting = false;
+        stopLoudAlarm();
         drowsyBanner.style.display = "none";
         earDisplay.textContent = "—";
         closedDisplay.textContent = "0.0s";
@@ -1243,7 +1408,7 @@
             liveState.className = "live-state-display state-danger";
             stateHint.textContent = "Eyes closed for more than 3 seconds! Take a break immediately.";
             setStatus("Critical: Driver Drowsy", "alert");
-            playAlarmSiren();
+            startLoudAlarm();
 
             // Flash red border on canvas
             context.strokeStyle = "rgba(239, 68, 68, 0.85)";
@@ -1251,6 +1416,7 @@
             context.strokeRect(0, 0, canvas.width, canvas.height);
           } else {
             isAlerting = false;
+            stopLoudAlarm();
             drowsyBanner.style.display = "none";
             liveState.textContent = "Eyes Closing...";
             liveState.className = "live-state-display state-warn";
@@ -1260,6 +1426,7 @@
         } else {
           closedStartTime = null;
           isAlerting = false;
+          stopLoudAlarm();
           drowsyBanner.style.display = "none";
           closedDisplay.textContent = "0.0s";
           liveState.textContent = "Driver Attentive";
@@ -1273,6 +1440,7 @@
     }
 
     async function startCamera() {
+      initAudio();
       if (stream) return;
       btnStart.disabled = true;
       cameraErrorBox.style.display = "none";
@@ -1344,6 +1512,12 @@
     }
 
     function stopCamera() {
+      stopLoudAlarm();
+      if (testAlarmTimer) {
+        clearTimeout(testAlarmTimer);
+        testAlarmTimer = null;
+        if (btnTestAudio) btnTestAudio.textContent = "🔊 Test Loud Siren (Max)";
+      }
       if (animId) cancelAnimationFrame(animId);
       animId = null;
 
